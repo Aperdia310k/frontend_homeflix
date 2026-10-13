@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeFlix - Catálogo de Vídeos Caseros</title>
+    <style>
+        :root {
+            --primary: #e50914;
+            --bg-dark: #141414;
+            --card-bg: #1f1f1f;
+            --text-light: #f5f5f5;
+            --text-muted: #aaa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: rgba(0, 0, 0, 0.85);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .search-box {
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            border: 1px solid #333;
+            background-color: #000;
+            color: #fff;
+            width: 250px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: var(--primary);
+            width: 300px;
+        }
+
+        main {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        .player-container {
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        .player-container video {
+            width: 100%;
+            max-height: 500px;
+            outline: none;
+        }
+
+        .player-info {
+            padding: 1rem 1.5rem;
+            background-color: var(--card-bg);
+        }
+
+        .player-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .player-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .categories {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-cat {
+            background: var(--card-bg);
+            color: #fff;
+            border: 1px solid #333;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-cat:hover, .btn-cat.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid #2a2a2a;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(229, 9, 20, 0.2);
+            border-color: var(--primary);
+        }
+
+        .card-thumb {
+            width: 100%;
+            height: 160px;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+        }
+
+        .card-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        .card-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: #0a0a0a;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid #222;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">🎥 HomeFlix</div>
+        <input type="text" id="searchInput" class="search-box" placeholder="Buscar vídeo casero...">
+    </header>
+
+    <main>
+        <!-- Reproductor Principal (Se activa al hacer clic en un vídeo) -->
+        <div class="player-container" id="playerContainer">
+            <video id="mainPlayer" controls autoplay>
+                <source id="videoSource" src="" type="video/mp4">
+                Tu navegador no soporta reproducción de vídeo HTML5.
+            </video>
+            <div class="player-info">
+                <h2 class="player-title" id="playerTitle">Título del Vídeo</h2>
+                <p class="player-desc" id="playerDesc">Descripción del vídeo seleccionado.</p>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="categories">
+            <button class="btn-cat active" onclick="filterCategory('todos')">Todos</button>
+            <button class="btn-cat" onclick="filterCategory('viajes')">Viajes</button>
+            <button class="btn-cat" onclick="filterCategory('eventos')">Eventos</button>
+            <button class="btn-cat" onclick="filterCategory('mascotas')">Mascotas</button>
+        </div>
+
+        <!-- Galería de Vídeos -->
+        <div class="grid" id="videoGrid"></div>
+    </main>
+
+    <footer>
+        <p>Práctica 3 - Servidor LXC Nginx en Proxmox VE | Despliegue de Aplicación Web</p>
+    </footer>
+
+    <script>
+        // Datos de catálogo (utilizan vídeos de prueba en streaming gratuito)
+        const videos = [
+            {
+                id: 1,
+                title: "Vacaciones en la Playa",
+                category: "viajes",
+                duration: "00:10",
+                date: "Verano 2024",
+                thumb: "🏖️",
+                desc: "Grabación en la costa durante el atardecer.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+            },
+            {
+                id: 2,
+                title: "Cumpleaños de la Abuela",
+                category: "eventos",
+                duration: "00:15",
+                date: "Mayo 2024",
+                thumb: "🎂",
+                desc: "Celebración familiar en la terraza de casa.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+            },
+            {
+                id: 3,
+                title: "Perro jugando en el Parque",
+                category: "mascotas",
+                duration: "00:12",
+                date: "Marzo 2024",
+                thumb: "🐶",
+                desc: "Tarde de paseos y juegos al aire libre.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+            },
+            {
+                id: 4,
+                title: "Ruta de Senderismo en la Montaña",
+                category: "viajes",
+                duration: "00:09",
+                date: "Enero 2024",
+                thumb: "🏔️",
+                desc: "Vistas espectaculares tras subir a la cumbre.",
+                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoylikes.mp4"
+            }
+        ];
+
+        const videoGrid = document.getElementById('videoGrid');
+        const playerContainer = document.getElementById('playerContainer');
+        const mainPlayer = document.getElementById('mainPlayer');
+        const videoSource = document.getElementById('videoSource');
+        const playerTitle = document.getElementById('playerTitle');
+        const playerDesc = document.getElementById('playerDesc');
+        const searchInput = document.getElementById('searchInput');
+
+        function renderVideos(items) {
+            videoGrid.innerHTML = '';
+            if(items.length === 0) {
+                videoGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888;">No se encontraron vídeos.</p>';
+                return;
+            }
+            items.forEach(v => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => playVideo(v);
+                card.innerHTML = `
+                    <div class="card-thumb">
+                        ${v.thumb}
+                        <span class="card-duration">${v.duration}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">${v.title}</div>
+                        <div class="card-meta">
+                            <span>${v.category.toUpperCase()}</span>
+                            <span>${v.date}</span>
+                        </div>
+                    </div>
+                `;
+                videoGrid.appendChild(card);
+            });
+        }
+
+        function playVideo(v) {
+            playerContainer.style.display = 'block';
+            videoSource.src = v.url;
+            mainPlayer.load();
+            mainPlayer.play();
+            playerTitle.textContent = v.title;
+            playerDesc.textContent = `${v.desc} — (${v.date})`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function filterCategory(cat) {
+            document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            if(cat === 'todos') {
+                renderVideos(videos);
+            } else {
+                renderVideos(videos.filter(v => v.category === cat));
+            }
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = videos.filter(v => v.title.toLowerCase().includes(query) || v.desc.toLowerCase().includes(query));
+            renderVideos(filtered);
+        });
+
+        // Inicializar catálogo
+        renderVideos(videos);
+    </script>
+</body>
+</html>
